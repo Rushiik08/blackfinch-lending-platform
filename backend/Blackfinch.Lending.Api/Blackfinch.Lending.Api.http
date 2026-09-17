@@ -1,0 +1,17 @@
+@Blackfinch.Lending.Api_HostAddress = http://localhost:5157
+
+POST {{Blackfinch.Lending.Api_HostAddress}}/api/applications
+Content-Type: application/json
+
+{
+  "loanAmount": 200000,
+  "assetValue": 400000,
+  "creditScore": 750
+}
+
+###
+
+GET {{Blackfinch.Lending.Api_HostAddress}}/api/applications/metrics
+Accept: application/json
+
+###

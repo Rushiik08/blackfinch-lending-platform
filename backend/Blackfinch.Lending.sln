@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blackfinch.Lending.Domain", "Blackfinch.Lending.Domain\Blackfinch.Lending.Domain.csproj", "{FF73021C-F77E-4E3E-B8C5-4B38D029EC36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blackfinch.Lending.Api", "Blackfinch.Lending.Api\Blackfinch.Lending.Api.csproj", "{DD94352F-FAC4-484F-A222-25EC41674199}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blackfinch.Lending.Domain.Tests", "..\tests\Blackfinch.Lending.Domain.Tests\Blackfinch.Lending.Domain.Tests.csproj", "{ABEEC799-4D54-4D4E-8B03-01FE1BA15F63}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF73021C-F77E-4E3E-B8C5-4B38D029EC36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF73021C-F77E-4E3E-B8C5-4B38D029EC36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF73021C-F77E-4E3E-B8C5-4B38D029EC36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF73021C-F77E-4E3E-B8C5-4B38D029EC36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD94352F-FAC4-484F-A222-25EC41674199}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD94352F-FAC4-484F-A222-25EC41674199}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD94352F-FAC4-484F-A222-25EC41674199}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD94352F-FAC4-484F-A222-25EC41674199}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABEEC799-4D54-4D4E-8B03-01FE1BA15F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABEEC799-4D54-4D4E-8B03-01FE1BA15F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABEEC799-4D54-4D4E-8B03-01FE1BA15F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABEEC799-4D54-4D4E-8B03-01FE1BA15F63}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
