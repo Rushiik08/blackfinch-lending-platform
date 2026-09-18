@@ -1,14 +1,32 @@
 export async function submitApplication(payload) {
-  const response = await fetch('/api/applications', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
+  let response
+  try {
+    response = await fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch {
+    throw new Error(
+      'Unable to connect to the lending service. Please ensure the backend server is running.'
+    )
+  }
 
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    const message = data.errors?.join(' ') || data.title || 'The application could not be submitted.'
+    let message = ''
+
+    if (Array.isArray(data.errors)) {
+      message = data.errors.join(' ')
+    } else if (data.errors && typeof data.errors === 'object') {
+      message = Object.values(data.errors).flat().join(' ')
+    }
+
+    if (!message) {
+      message = data.detail || data.title || 'The application could not be submitted.'
+    }
+
     throw new Error(message)
   }
 
@@ -16,7 +34,13 @@ export async function submitApplication(payload) {
 }
 
 export async function getMetrics() {
-  const response = await fetch('/api/applications/metrics')
+  let response
+  try {
+    response = await fetch('/api/applications/metrics')
+  } catch {
+    throw new Error('Unable to connect to the lending service API.')
+  }
+
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {

@@ -171,4 +171,28 @@ public class LoanDecisionServiceTests
         _sut.Decide(200_000m, 400_000m, 1).Status.Should().Be(LoanDecisionStatus.Declined);
         _sut.Decide(200_000m, 400_000m, 999).Status.Should().Be(LoanDecisionStatus.Successful);
     }
+
+    [Fact]
+    public void Normalized_loan_amount_at_100000_boundary_evaluates_consistently()
+    {
+        var rawAmount = 99_999.996m;
+        var normalizedAmount = decimal.Round(rawAmount, 2, MidpointRounding.AwayFromZero);
+        normalizedAmount.Should().Be(100_000.00m);
+
+        var result = _sut.Decide(normalizedAmount, 250_000m, 750);
+        result.Status.Should().Be(LoanDecisionStatus.Successful);
+        result.LtvPercent.Should().Be(40m);
+    }
+
+    [Fact]
+    public void Normalized_loan_amount_below_100000_boundary_is_declined()
+    {
+        var rawAmount = 99_999.994m;
+        var normalizedAmount = decimal.Round(rawAmount, 2, MidpointRounding.AwayFromZero);
+        normalizedAmount.Should().Be(99_999.99m);
+
+        var result = _sut.Decide(normalizedAmount, 250_000m, 750);
+        result.Status.Should().Be(LoanDecisionStatus.Declined);
+        result.DeclineReason.Should().Contain("£100,000");
+    }
 }

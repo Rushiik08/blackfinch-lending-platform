@@ -132,8 +132,49 @@ dd {
 }
 
 .reason,
-.error {
+.error,
+.field-error {
   color: #991b1b;
+}
+
+.field-error {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+input.has-error {
+  border-color: #991b1b;
+  outline-color: #991b1b;
+}
+
+.required-star {
+  color: #991b1b;
+  margin-left: 3px;
+}
+
+.status-banner {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-banner.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #57534e;
+  margin: 16px 0 8px;
 }
 
 .muted {

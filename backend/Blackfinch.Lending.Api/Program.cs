@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173", "http://localhost:4173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -31,7 +31,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<LendingDbContext>();
-    db.Database.EnsureCreated();
+    db.EnsureSchemaUpdated();
+    db.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
 }
 
 if (app.Environment.IsDevelopment())

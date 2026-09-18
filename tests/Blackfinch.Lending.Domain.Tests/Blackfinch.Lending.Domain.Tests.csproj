@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\backend\Blackfinch.Lending.Domain\Blackfinch.Lending.Domain.csproj" />
+    <ProjectReference Include="..\..\backend\Blackfinch.Lending.Api\Blackfinch.Lending.Api.csproj" />
   </ItemGroup>
 
 </Project>

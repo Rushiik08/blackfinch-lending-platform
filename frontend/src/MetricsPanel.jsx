@@ -5,7 +5,7 @@ function money(value) {
   }).format(value)
 }
 
-export default function MetricsPanel({ metrics }) {
+export default function MetricsPanel({ metrics, isUnavailable }) {
   const empty = {
     successfulApplicants: 0,
     declinedApplicants: 0,
@@ -18,6 +18,11 @@ export default function MetricsPanel({ metrics }) {
   return (
     <section className="panel">
       <h2>Platform statistics</h2>
+      {isUnavailable ? (
+        <div className="status-banner warning">
+          Platform statistics are currently unavailable (backend service offline).
+        </div>
+      ) : null}
       <dl className="facts">
         <div>
           <dt>Successful applicants</dt>

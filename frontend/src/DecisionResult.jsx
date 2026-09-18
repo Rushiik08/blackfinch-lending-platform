@@ -36,6 +36,29 @@ export default function DecisionResult({ result, error }) {
         {result.decision}
       </p>
 
+      {result.fullName ? (
+        <>
+          <h3 className="section-title">Applicant details</h3>
+          <dl className="facts">
+            <div>
+              <dt>Applicant name</dt>
+              <dd>{result.fullName}</dd>
+            </div>
+
+            <div>
+              <dt>Email</dt>
+              <dd>{result.email}</dd>
+            </div>
+
+            <div>
+              <dt>Phone number</dt>
+              <dd>{result.phoneNumber}</dd>
+            </div>
+          </dl>
+        </>
+      ) : null}
+
+      <h3 className="section-title">Loan details</h3>
       <dl className="facts">
         <div>
           <dt>Loan amount</dt>
@@ -43,7 +66,7 @@ export default function DecisionResult({ result, error }) {
         </div>
 
         <div>
-          <dt>Asset value</dt>
+          <dt>Property value</dt>
           <dd>{money(result.assetValue)}</dd>
         </div>
 

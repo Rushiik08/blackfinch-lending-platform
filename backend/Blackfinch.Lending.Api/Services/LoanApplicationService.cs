@@ -20,16 +20,23 @@ public sealed class LoanApplicationService
         SubmitApplicationRequest request,
         CancellationToken cancellationToken)
     {
+        // Normalize monetary inputs to 2 decimal places before validation & decision
+        var normalizedLoanAmount = decimal.Round(request.LoanAmount, 2, MidpointRounding.AwayFromZero);
+        var normalizedAssetValue = decimal.Round(request.AssetValue, 2, MidpointRounding.AwayFromZero);
+
         var decision = _decisionService.Decide(
-            request.LoanAmount,
-            request.AssetValue,
+            normalizedLoanAmount,
+            normalizedAssetValue,
             request.CreditScore);
 
         var application = new LoanApplication
         {
             Id = Guid.NewGuid(),
-            LoanAmount = decimal.Round(request.LoanAmount, 2, MidpointRounding.AwayFromZero),
-            AssetValue = decimal.Round(request.AssetValue, 2, MidpointRounding.AwayFromZero),
+            FullName = request.FullName.Trim(),
+            Email = request.Email.Trim(),
+            PhoneNumber = request.PhoneNumber.Trim(),
+            LoanAmount = normalizedLoanAmount,
+            AssetValue = normalizedAssetValue,
             CreditScore = request.CreditScore,
             LtvPercent = decision.LtvPercent,
             IsSuccessful = decision.IsSuccessful,
@@ -45,6 +52,9 @@ public sealed class LoanApplicationService
         return new SubmitApplicationResponse
         {
             Id = application.Id,
+            FullName = application.FullName,
+            Email = application.Email,
+            PhoneNumber = application.PhoneNumber,
             LoanAmount = application.LoanAmount,
             AssetValue = application.AssetValue,
             CreditScore = application.CreditScore,
@@ -57,20 +67,34 @@ public sealed class LoanApplicationService
 
     public async Task<PlatformMetricsResponse> GetMetricsAsync(CancellationToken cancellationToken)
     {
-        var applications = await _db.LoanApplications.AsNoTracking().ToListAsync(cancellationToken);
+        var totalApplicants = await _db.LoanApplications.CountAsync(cancellationToken);
+        if (totalApplicants == 0)
+        {
+            return new PlatformMetricsResponse
+            {
+                SuccessfulApplicants = 0,
+                DeclinedApplicants = 0,
+                TotalApplicants = 0,
+                TotalValueOfLoansWritten = 0m,
+                MeanAverageLtv = 0m
+            };
+        }
 
-        var successful = applications.Count(x => x.IsSuccessful);
-        var declined = applications.Count(x => !x.IsSuccessful);
-        var totalWritten = applications.Where(x => x.IsSuccessful).Sum(x => x.LoanAmount);
-        var meanLtv = applications.Count == 0
-            ? 0m
-            : applications.Average(x => x.LtvPercent);
+        var successful = await _db.LoanApplications.CountAsync(x => x.IsSuccessful, cancellationToken);
+        var declined = totalApplicants - successful;
+
+        var aggregates = await _db.LoanApplications.AsNoTracking()
+            .Select(x => new { x.IsSuccessful, x.LoanAmount, x.LtvPercent })
+            .ToListAsync(cancellationToken);
+
+        var totalWritten = aggregates.Where(x => x.IsSuccessful).Sum(x => x.LoanAmount);
+        var meanLtv = aggregates.Average(x => x.LtvPercent);
 
         return new PlatformMetricsResponse
         {
             SuccessfulApplicants = successful,
             DeclinedApplicants = declined,
-            TotalApplicants = applications.Count,
+            TotalApplicants = totalApplicants,
             TotalValueOfLoansWritten = decimal.Round(totalWritten, 2, MidpointRounding.AwayFromZero),
             MeanAverageLtv = decimal.Round(meanLtv, 4, MidpointRounding.AwayFromZero)
         };
