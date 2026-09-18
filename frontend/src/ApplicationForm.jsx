@@ -5,14 +5,22 @@ function Field({ id, label, hint, ...props }) {
       <input id={id} {...props} />
       {hint ? <span className="field-hint">{hint}</span> : null}
     </label>
-  )
+  );
 }
 
-export default function ApplicationForm({ values, onChange, onSubmit, submitting }) {
+export default function ApplicationForm({
+  values,
+  onChange,
+  onSubmit,
+  submitting,
+}) {
   return (
     <form className="panel" onSubmit={onSubmit}>
       <h2>New application</h2>
-      <p className="lede">Enter the three values required by the lending brief. The API makes the decision.</p>
+
+      <p className="lede">
+        Enter your loan details below to submit an application.
+      </p>
 
       <Field
         id="loanAmount"
@@ -23,8 +31,9 @@ export default function ApplicationForm({ values, onChange, onSubmit, submitting
         step="0.01"
         required
         value={values.loanAmount}
-        onChange={(event) => onChange('loanAmount', event.target.value)}
+        onChange={(event) => onChange("loanAmount", event.target.value)}
       />
+
       <Field
         id="assetValue"
         label="Asset value (GBP)"
@@ -34,8 +43,9 @@ export default function ApplicationForm({ values, onChange, onSubmit, submitting
         step="0.01"
         required
         value={values.assetValue}
-        onChange={(event) => onChange('assetValue', event.target.value)}
+        onChange={(event) => onChange("assetValue", event.target.value)}
       />
+
       <Field
         id="creditScore"
         label="Credit score"
@@ -46,12 +56,12 @@ export default function ApplicationForm({ values, onChange, onSubmit, submitting
         step="1"
         required
         value={values.creditScore}
-        onChange={(event) => onChange('creditScore', event.target.value)}
+        onChange={(event) => onChange("creditScore", event.target.value)}
       />
 
       <button type="submit" disabled={submitting}>
-        {submitting ? 'Submitting…' : 'Submit application'}
+        {submitting ? "Submitting…" : "Submit application"}
       </button>
     </form>
-  )
+  );
 }
