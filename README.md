@@ -1,700 +1,102 @@
-# Blackfinch Lending Platform
+﻿# Blackfinch Lending Platform
 
-A full-stack simulation of a secured lending platform developed for the **Blackfinch Engineering Candidate Technical Test – Full Stack, September 2026**.
+Blackfinch Lending Platform is a full-stack secured-loan application created for the **Blackfinch Engineering Candidate Technical Test — Full Stack, September 2026**.
 
-The application allows users to submit a secured loan application and receive an instant lending decision based on the applicant's loan amount, secured asset value, and credit score.
+An applicant enters their contact information and secured-loan details in the React application. The ASP.NET Core API validates the request, applies the lending rules, stores the application in SQLite, and returns an immediate `Successful` or `Declined` decision. The frontend displays the decision and the current platform statistics.
 
-The platform also provides statistics about submitted applications, including successful and declined applicants, total value of loans written, and mean average Loan-to-Value (LTV).
+The backend is the single source of truth. Lending rules are implemented in the domain project and are not duplicated in the controller or used to make decisions in the frontend.
 
----
+## Main features
 
-## Table of Contents
+- Applicant form for full name, email, phone number, loan amount, property value, and credit score
+- Client-side feedback for common input errors
+- Server-side validation for every request
+- Instant secured-lending decision
+- LTV calculation and decline explanation
+- SQLite persistence for all submitted applications
+- Platform metrics updated after every submission
+- Complete application history visible in the UI, with accepted and declined decisions
+- Swagger documentation in Development
+- Automated xUnit tests for rules, boundaries, and validation
+- CORS configuration for the local Vite frontend
 
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Business Rules](#business-rules)
-- [Loan-to-Value Calculation](#loan-to-value-calculation)
-- [Application Flow](#application-flow)
-- [Database](#database)
-- [API](#api)
-- [Frontend](#frontend)
-- [Validation](#validation)
-- [How to Run](#how-to-run)
-- [Testing](#testing)
-- [Example Test Cases](#example-test-cases)
-- [Statistics](#statistics)
-- [Design Decisions](#design-decisions)
-- [Assumptions](#assumptions)
-- [Error Handling](#error-handling)
-- [AI-Assisted Development](#ai-assisted-development)
-- [Production Considerations](#production-considerations)
-- [Technical Test Requirements](#technical-test-requirements)
-- [Submission](#submission)
+## Technology
 
----
+| Area | Technology |
+| --- | --- |
+| Backend API | ASP.NET Core 8 Web API |
+| Lending domain | .NET class library with plain C# rules |
+| Persistence | Entity Framework Core with SQLite |
+| Frontend | React and Vite |
+| Tests | xUnit |
+| API documentation | Swagger / OpenAPI |
 
-# Overview
+SQLite was chosen so the project can run without a separate database server. The lending domain is independent of Entity Framework and can be moved to another relational provider later.
 
-The Blackfinch Lending Platform is a small full-stack application that simulates the decision-making process for secured lending.
-
-A user provides:
-
-- Full Name
-- Email Address
-- Phone Number
-- Loan Amount
-- Property / Asset Value
-- Credit Score
-
-The backend calculates the Loan-to-Value (LTV) and applies the required lending rules.
-
-The system then returns:
-
-- Whether the application is **Successful** or **Declined**
-- The calculated LTV
-- Relevant decision information
-
-The platform also stores application data and provides overall lending statistics.
-
-The core lending inputs required by the technical test are:
-
-- Loan amount in GBP
-- Asset value securing the loan
-- Applicant credit score
-
----
-
-# Features
-
-## Applicant Application
-
-Users can submit a new secured loan application with:
-
-- Full Name
-- Email Address
-- Phone Number
-- Loan Amount in GBP
-- Property / Asset Value in GBP
-- Credit Score
-
----
-
-## Instant Lending Decision
-
-After submitting an application, the backend:
-
-1. Validates the input.
-2. Calculates the LTV.
-3. Applies the lending rules.
-4. Determines whether the application is successful or declined.
-5. Stores the application.
-6. Returns the result to the frontend.
-
-The lending decision is handled by the backend rather than the React frontend.
-
----
-
-## Platform Statistics
-
-The application displays:
-
-- Successful applicants
-- Declined applicants
-- Total applicants
-- Total value of loans written
-- Mean average LTV
-
-These statistics are calculated from the applications stored in the database.
-
----
-
-## Input Validation
-
-The application validates:
-
-- Required fields
-- Email address
-- Phone number
-- Loan amount
-- Property / asset value
-- Credit score
-- Numeric values
-
-The credit score must be a whole number between **1 and 999**.
-
----
-
-## REST API
-
-The React frontend communicates with the ASP.NET Core Web API.
-
-The API is responsible for:
-
-- Receiving applications
-- Validating input
-- Applying lending rules
-- Persisting application data
-- Calculating statistics
-- Returning responses to the frontend
-
----
-
-# Technology Stack
-
-## Backend
-
-- **C#**
-- **ASP.NET Core 8 Web API**
-- **Entity Framework Core**
-- **SQLite**
-- **Swagger / OpenAPI**
-
-## Frontend
-
-- **React**
-- **Vite**
-- **JavaScript**
-- **CSS**
-
-## Testing
-
-- **xUnit**
-- **.NET test framework**
-
-## Development Tools
-
-- Visual Studio Code
-- Git
-- GitHub
-- .NET CLI
-- npm
-
----
-
-# Architecture
-
-The application separates presentation, API, domain logic, and persistence responsibilities.
+## Repository structure
 
 ```text
-                    ┌─────────────────────┐
-                    │    React Frontend   │
-                    │                     │
-                    │ Application Form    │
-                    │ Decision Result     │
-                    │ Statistics          │
-                    └──────────┬──────────┘
-                               │
-                               │ HTTP / REST API
-                               ▼
-                    ┌─────────────────────┐
-                    │ ASP.NET Core API    │
-                    │                     │
-                    │ Controllers         │
-                    │ Validation          │
-                    │ Services            │
-                    │ Persistence         │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Domain Layer        │
-                    │                     │
-                    │ Lending Rules       │
-                    │ LTV Calculation     │
-                    │ Decision Logic      │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ SQLite Database     │
-                    │                     │
-                    │ Applications        │
-                    └─────────────────────┘
+backend/
+  Blackfinch.Lending.Domain/
+    LoanDecisionService.cs       Lending rules and LTV calculation
+    LoanDecision.cs               Decision value returned by the domain
+    LoanDecisionStatus.cs         Successful or Declined status
+  Blackfinch.Lending.Api/
+    Contracts/                    HTTP request and response models
+    Controllers/                  API endpoints
+    Data/                         EF Core context and database entity
+    Services/                     Application submission and metrics
+    Validation/                   Contact and financial input validation
+    Program.cs                    Dependency injection, SQLite, CORS, Swagger
+tests/
+  Blackfinch.Lending.Domain.Tests/
+    LoanDecisionServiceTests.cs
+    ApplicationRequestValidatorTests.cs
+frontend/
+  src/
+    App.jsx                       Form state, submission, and metrics loading
+    ApplicationForm.jsx           Applicant input form
+    DecisionResult.jsx            Decision and application details
+    MetricsPanel.jsx              Platform statistics
+    api.js                        API client
 ```
 
-### Separation of Responsibilities
+## Requirements
 
-### React Frontend
-
-Responsible for:
-
-- Displaying the application form
-- Collecting user input
-- Calling the API
-- Displaying the lending decision
-- Displaying platform statistics
-
-The frontend does not contain the core lending decision rules.
-
-### ASP.NET Core API
-
-Responsible for:
-
-- HTTP requests and responses
-- Request validation
-- API contracts
-- Persistence
-- Connecting the frontend with the domain layer
-
-### Domain Layer
-
-Responsible for:
-
-- Lending rules
-- LTV calculation
-- Lending decision logic
-
-This keeps the core business logic independent from the HTTP and UI layers.
-
----
-
-# Project Structure
-
-```text
-Blackfinch-Lending-Platform/
-│
-├── backend/
-│   │
-│   ├── Blackfinch.Lending.Domain/
-│   │   ├── Entities/
-│   │   ├── Services/
-│   │   └── ...
-│   │
-│   ├── Blackfinch.Lending.Api/
-│   │   ├── Contracts/
-│   │   ├── Controllers/
-│   │   ├── Data/
-│   │   ├── Properties/
-│   │   ├── Services/
-│   │   ├── Validation/
-│   │   ├── Program.cs
-│   │   └── appsettings.json
-│   │
-│   └── Blackfinch.Lending.sln
-│
-├── frontend/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── api.js
-│   │   ├── App.jsx
-│   │   ├── ApplicationForm.jsx
-│   │   ├── DecisionResult.jsx
-│   │   ├── MetricsPanel.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   │
-│   ├── public/
-│   ├── package.json
-│   ├── vite.config.js
-│   └── index.html
-│
-├── tests/
-│   └── Blackfinch.Lending.Domain.Tests/
-│
-├── README.md
-└── .gitignore
-```
-
----
-
-# Business Rules
-
-The lending decision follows the business rules provided in the technical test.
-
-## General Loan Limits
-
-An application is declined if:
-
-```text
-Loan Amount < £100,000
-```
-
-or:
-
-```text
-Loan Amount > £1,500,000
-```
-
----
-
-## Loans of £1 Million or More
-
-If:
-
-```text
-Loan Amount >= £1,000,000
-```
-
-both of the following conditions must be satisfied:
-
-```text
-LTV <= 60%
-```
-
-and:
-
-```text
-Credit Score >= 950
-```
-
-If either condition is not satisfied, the application is declined.
-
----
-
-## Loans Below £1 Million
-
-If:
-
-```text
-Loan Amount < £1,000,000
-```
-
-the applicable credit-score requirement depends on the LTV.
-
-| LTV                  | Required Credit Score |
-| -------------------- | --------------------: |
-| Less than 60%        |                >= 750 |
-| 60% to less than 80% |                >= 800 |
-| 80% to less than 90% |                >= 900 |
-| 90% or more          |              Declined |
-
-The overlapping wording in the supplied brief was interpreted as mutually exclusive LTV bands so that each application falls into one applicable band.
-
----
-
-# Loan-to-Value Calculation
-
-Loan-to-Value (LTV) represents the loan amount as a percentage of the secured asset value.
-
-The formula is:
-
-```text
-LTV = (Loan Amount / Asset Value) × 100
-```
-
-### Example
-
-```text
-Loan Amount = £500,000
-
-Asset Value = £1,000,000
-
-LTV = (500,000 / 1,000,000) × 100
-
-LTV = 50%
-```
-
----
-
-# Application Flow
-
-```text
-User enters application details
-             │
-             ▼
-       Frontend validation
-             │
-             ▼
-       Submit application
-             │
-             ▼
-       ASP.NET Core API
-             │
-             ▼
-        Validate input
-             │
-             ▼
-       Calculate LTV
-             │
-             ▼
-      Apply lending rules
-             │
-             ▼
-   ┌─────────┴─────────┐
-   │                   │
-   ▼                   ▼
-Successful          Declined
-   │                   │
-   └─────────┬─────────┘
-             │
-             ▼
-      Save application
-             │
-             ▼
-       Return result
-             │
-             ▼
-       React displays
-             │
-             ▼
-       Update statistics
-```
-
----
-
-# Database
-
-The application uses **SQLite** with **Entity Framework Core**.
-
-SQLite was selected for this technical-test implementation because it:
-
-- Requires no separate database server
-- Is simple to configure
-- Supports relational data
-- Works with Entity Framework Core
-- Makes local setup straightforward
-
-The application creates and uses a local SQLite database file:
-
-```text
-lending.db
-```
-
-No separate SQL Server or PostgreSQL installation is required for local development.
-
----
-
-# API
-
-The backend is implemented using **ASP.NET Core 8 Web API**.
-
-The API handles:
-
-```text
-Request
-   ↓
-Validation
-   ↓
-Business Logic
-   ↓
-Database
-   ↓
-Response
-```
-
-The API is responsible for processing applications and providing the platform statistics used by the frontend.
-
----
-
-## Swagger
-
-When running in development mode, Swagger can be accessed at:
-
-```text
-http://localhost:5157/swagger
-```
-
-Swagger provides an interface for inspecting and testing the API.
-
----
-
-# Frontend
-
-The frontend is implemented using **React and Vite**.
-
-The application provides a simple interface for submitting lending applications.
-
-## New Application
-
-The form collects:
-
-- Full Name
-- Email Address
-- Phone Number
-- Loan Amount
-- Property Value
-- Credit Score
-
----
-
-## Application Result
-
-After submitting an application, the result section displays the lending decision returned by the backend.
-
-The backend is responsible for determining whether the application is successful or declined.
-
----
-
-## Platform Statistics
-
-The statistics section displays:
-
-- Successful applicants
-- Declined applicants
-- Total applicants
-- Total value of loans written
-- Mean average LTV
-
----
-
-# Validation
-
-Validation is performed before an application is processed.
-
-Important validation rules include:
-
-## Loan Amount
-
-The loan amount must be within the supported range:
-
-```text
-Minimum: £100,000
-Maximum: £1,500,000
-```
-
-## Credit Score
-
-The credit score must be:
-
-```text
-1 to 999
-```
-
-and must be a whole number.
-
-## Property Value
-
-The property / asset value must be provided and must be valid for calculating LTV.
-
-## Contact Information
-
-The application validates:
-
-- Name
-- Email
-- Phone number
-
-before processing the application.
-
----
-
-# How to Run
-
-## Prerequisites
-
-Install the following:
+Install:
 
 - .NET 8 SDK
-- Node.js
-- npm
-- Visual Studio Code
+- Node.js and npm
 
-Verify the installations:
+No SQL Server, LocalDB, Docker, or separate database installation is required.
 
-```bash
-dotnet --version
-```
+## Run locally
 
-```bash
-node --version
-```
+### 1. Start the backend
 
-```bash
-npm --version
-```
-
----
-
-# Step 1 - Clone the Repository
-
-Clone the public GitHub repository:
-
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-```
-
-Navigate into the project:
-
-```bash
-cd Blackfinch-Lending-Platform
-```
-
----
-
-# Step 2 - Run the Backend
-
-Open a terminal at the project root.
-
-Run:
+From the repository root:
 
 ```bash
 dotnet run --project backend/Blackfinch.Lending.Api --launch-profile http
 ```
 
-The API will run at:
+The API runs at `http://localhost:5157`. In Development, Swagger UI is available at `http://localhost:5157/swagger`.
 
-```text
-http://localhost:5157
+On first startup, Entity Framework creates the `LoanApplications` table in the SQLite database configured by `ConnectionStrings:Lending` in `backend/Blackfinch.Lending.Api/appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "Lending": "Data Source=lending.db"
+  }
+}
 ```
 
-Swagger will be available at:
+The database path is relative to the API process working directory. To clear all applications and metrics, stop the API and delete the generated `lending.db` file.
 
-```text
-http://localhost:5157/swagger
-```
+### 2. Start the frontend
 
-The SQLite database is initialized by the backend.
-
----
-
-# Step 3 - Run the Frontend
-
-Open a **second terminal**.
-
-Navigate to the frontend:
-
-```bash
-cd frontend
-```
-
-Install the required npm packages:
-
-```bash
-npm install
-```
-
-Start the React development server:
-
-```bash
-npm run dev
-```
-
-Vite will start the frontend at:
-
-```text
-http://localhost:5173
-```
-
----
-
-# Step 4 - Open the Application
-
-Open the following URL in your browser:
-
-```text
-http://localhost:5173
-```
-
-The React frontend will communicate with the ASP.NET Core backend.
-
----
-
-# Running Both Applications
-
-The backend and frontend run as two separate processes.
-
-## Terminal 1 - Backend
-
-From the project root:
-
-```bash
-dotnet run --project backend/Blackfinch.Lending.Api --launch-profile http
-```
-
-## Terminal 2 - Frontend
+In a second terminal:
 
 ```bash
 cd frontend
@@ -702,527 +104,184 @@ npm install
 npm run dev
 ```
 
-Then open:
+Open `http://localhost:5173`. Vite proxies `/api` requests to the backend. The API also allows the Vite preview origin `http://localhost:4173`.
 
-```text
-http://localhost:5173
-```
+### 3. Run tests
 
----
-
-# Testing
-
-Automated tests are included for the lending domain logic.
-
-Run all tests from the project root:
+From the repository root:
 
 ```bash
 dotnet test backend/Blackfinch.Lending.sln
 ```
 
-You can also run the domain test project directly:
-
-```bash
-dotnet test tests/Blackfinch.Lending.Domain.Tests
-```
-
-The tests focus on important lending-rule scenarios and boundary conditions.
-
----
-
-# Example Test Cases
-
-The following examples can be used to manually test the application.
-
----
-
-## Test Case 1 - Loan Below Minimum
-
-### Input
-
-```text
-Loan Amount: £50,000
-Property Value: £100,000
-Credit Score: 800
-```
-
-### Expected Result
-
-```text
-Declined
-```
-
-Reason:
-
-The loan amount is below the minimum supported amount of £100,000.
-
----
-
-## Test Case 2 - Loan Above Maximum
-
-### Input
-
-```text
-Loan Amount: £2,000,000
-Property Value: £3,000,000
-Credit Score: 999
-```
-
-### Expected Result
-
-```text
-Declined
-```
-
-Reason:
-
-The loan amount is above the maximum of £1,500,000.
-
----
-
-## Test Case 3 - Low LTV Application
-
-### Input
-
-```text
-Loan Amount: £500,000
-Property Value: £1,000,000
-Credit Score: 800
-```
-
-### LTV
-
-```text
-LTV = (500,000 / 1,000,000) × 100
-
-LTV = 50%
-```
-
-### Expected Result
-
-```text
-Successful
-```
-
-The LTV is below 60% and the credit score satisfies the applicable threshold.
-
----
-
-## Test Case 4 - High LTV Application
-
-### Input
-
-```text
-Loan Amount: £500,000
-Property Value: £500,000
-Credit Score: 999
-```
-
-### LTV
-
-```text
-LTV = (500,000 / 500,000) × 100
-
-LTV = 100%
-```
-
-### Expected Result
-
-```text
-Declined
-```
-
-An LTV of 90% or more is declined for loans below £1 million.
-
----
-
-## Test Case 5 - £1 Million Loan
-
-### Input
-
-```text
-Loan Amount: £1,000,000
-Property Value: £2,000,000
-Credit Score: 950
-```
-
-### LTV
-
-```text
-LTV = (1,000,000 / 2,000,000) × 100
-
-LTV = 50%
-```
-
-### Expected Result
-
-```text
-Successful
-```
-
-The LTV is within 60% and the credit score meets the 950 requirement.
-
----
-
-## Test Case 6 - £1 Million Loan With Insufficient Credit Score
-
-### Input
-
-```text
-Loan Amount: £1,000,000
-Property Value: £2,000,000
-Credit Score: 900
-```
-
-### LTV
-
-```text
-LTV = 50%
-```
-
-### Expected Result
-
-```text
-Declined
-```
-
-The credit score is below the required 950 for loans of £1 million or more.
-
----
-
-# Statistics
-
-The platform calculates statistics from submitted applications.
-
-## Successful Applicants
-
-The number of applications that received a successful lending decision.
-
----
-
-## Declined Applicants
-
-The number of applications that received a declined lending decision.
-
----
-
-## Total Applicants
-
-The total number of submitted applications:
-
-```text
-Successful Applicants + Declined Applicants
-```
-
----
-
-## Total Value of Loans Written
-
-The total value of loans from successful applications.
-
----
-
-## Mean Average LTV
-
-The mean LTV across all submitted applications.
-
----
-
-# Design Decisions
-
-## 1. Domain Logic Is Separate From Controllers
-
-The core lending rules are implemented in the domain layer instead of directly inside API controllers.
-
-This keeps the controllers focused on handling HTTP requests and responses.
-
----
-
-## 2. Backend Is the Source of Truth
-
-The lending decision is calculated by the backend.
-
-The React frontend collects information and displays the result but does not independently determine whether an application should be approved or declined.
-
----
-
-## 3. SQLite Database
-
-SQLite was selected for the technical-test implementation because it provides relational persistence without requiring a separate database server.
-
----
-
-## 4. Simple Architecture
-
-The project uses a simple layered structure rather than introducing unnecessary architectural complexity.
-
-The implementation does not add CQRS, microservices, or other patterns that are not required for the scope of this test.
-
----
-
-## 5. LTV Bands
-
-The technical test contains overlapping wording for the LTV conditions below £1 million.
-
-The implementation interprets these as mutually exclusive bands:
-
-```text
-LTV < 60%
-60% <= LTV < 80%
-80% <= LTV < 90%
-LTV >= 90%
-```
-
-This ensures that exactly one lending rule applies to an application.
-
----
-
-## 6. Application Data
-
-Applicant contact details are stored as part of the application because they are part of the application flow implemented in the frontend.
-
----
-
-# Assumptions
-
-The following assumptions were made during implementation:
-
-1. SQLite is suitable for the technical-test implementation.
-2. The backend is the source of truth for lending decisions.
-3. The frontend is responsible for presentation and user interaction.
-4. Authentication is not implemented because it is not specified as a requirement in the supplied technical test.
-5. The lending decision is calculated immediately after application submission.
-6. Applications are stored locally in SQLite.
-7. The LTV conditions for loans below £1 million are interpreted as mutually exclusive bands.
-8. "Loans written" refers to successful applications.
-9. Mean LTV is calculated across all applications.
-10. The application is intended as a technical-test implementation and not as a production lending system.
-
----
-
-# Error Handling
-
-The application validates input before processing the lending decision.
-
-Examples of invalid input include:
-
-- Missing required fields
-- Invalid email address
-- Invalid phone number
-- Invalid loan amount
-- Invalid property value
-- Invalid credit score
-- Invalid numeric input
-
-Invalid requests are rejected rather than being processed as lending decisions.
-
-A valid application can still receive a **Declined** lending decision when it does not satisfy the lending business rules.
-
-This keeps input validation separate from the lending decision.
-
----
-
-# AI-Assisted Development
-
-AI tools were used during the development process.
-
-The AI assistance was used for activities including:
-
-- Understanding the technical-test requirements
-- Analysing the lending business rules
-- Discussing application architecture
-- Generating implementation ideas
-- Debugging development issues
-- Reviewing code structure
-- Suggesting validation approaches
-- Creating test scenarios
-- Reviewing design decisions
-- Improving documentation
-
-AI-generated suggestions were reviewed against the actual requirements and implementation.
-
-Important decisions and corrections were made after reviewing the AI output, including:
-
-- Interpreting the overlapping LTV conditions as mutually exclusive bands
-- Keeping the lending decision in the domain layer
-- Separating validation from lending decisions
-- Using SQLite for simple local development
-- Avoiding unnecessary architectural complexity
-
-A detailed AI log containing the key prompts, iterations, corrections, questioned output, and verification process is submitted separately as the required PDF document.
-
----
-
-# Production Considerations
-
-The application is designed as a technical-test implementation rather than a production lending system.
-
-For a production version, I would consider the following improvements.
-
-## Security
-
-- Authentication
-- Authorization
-- HTTPS
-- Secure secret management
-- API security
-- Protection of personal and financial information
-
-## Database
-
-- Production relational database
-- Database backups
-- High availability
-- Migration management
-- Monitoring
-
-## Testing
-
-- Additional unit tests
-- Integration tests
-- API tests
-- End-to-end tests
-- Load testing
-
-## Monitoring
-
-- Structured logging
-- Application monitoring
-- Health checks
-- Error tracking
-- Performance monitoring
-
-## Deployment
-
-- CI/CD pipeline
-- Containerization
-- Environment-specific configuration
-- Automated deployments
-- Production monitoring
-
-## Additional Lending Features
-
-A production system could also include:
-
-- User authentication
-- Application history
-- Application status tracking
-- Document upload
-- Underwriter workflows
-- Audit trails
-- Notifications
-- Reporting
-- User roles
-
-These features are outside the scope of the technical test.
-
----
-
-# Technical Test Requirements
-
-This project was developed for the **Blackfinch Engineering Candidate Technical Test - Full Stack, September 2026**.
-
-The technical test asks for an API and web frontend that simulate a basic lending platform.
-
-The assessment focuses on:
-
-- Correctness of business logic
-- Clarity and maintainability of code
-- Separation of concerns
-- Modularity
-- Effective use of AI
-- Quality of prompting
-- Iteration and critical review of AI output
-- Ability to explain reasoning, assumptions, and trade-offs
-
-The required lending inputs are:
-
-- Loan amount
-- Asset value
-- Applicant credit score
-
-The required outputs include:
-
-- Loan decision
-- Total number of applicants grouped by success status
-- Total value of loans written
-- Mean average LTV
-
----
-
-# Submission
-
-The project is submitted as a public Git repository.
-
-The repository contains:
-
-- Backend source code
-- Frontend source code
-- Domain logic
-- Automated tests
-- README documentation
-- `.gitignore`
-
-The README provides instructions for running the backend and frontend locally.
-
-The detailed AI log is provided separately as a PDF document through the submission form.
-
----
-
-# Local URLs
-
-When running the application locally:
-
-## Frontend
-
-```text
-http://localhost:5173
-```
-
-## Backend API
-
-```text
-http://localhost:5157
-```
-
-## Swagger
-
-```text
-http://localhost:5157/swagger
-```
-
----
-
-# Quick Start
-
-## Terminal 1 - Backend
-
-From the project root:
-
-```bash
-dotnet run --project backend/Blackfinch.Lending.Api --launch-profile http
-```
-
-## Terminal 2 - Frontend
+The tests cover:
+
+- Minimum and maximum loan amounts
+- The £1 million large-loan threshold
+- LTV boundaries at 60%, 80%, and 90%
+- Credit-score thresholds of 750, 800, 900, and 950
+- Invalid financial inputs
+- Required and malformed applicant contact details
+
+The frontend can be production-built with:
 
 ```bash
 cd frontend
-npm install
-npm run dev
+npm run build
 ```
 
-Open the application:
+## Application flow
+
+1. The frontend loads existing platform metrics from `GET /api/applications/metrics`.
+2. The user completes the application form.
+3. The frontend performs immediate field validation and prevents submission when input is clearly invalid.
+4. The frontend sends the normalized form values to `POST /api/applications`.
+5. The API validates contact and financial fields again.
+6. `LoanDecisionService` calculates LTV and applies the lending rules.
+7. The API stores both successful and declined applications.
+8. The API returns the application result and refreshed metrics.
+9. The frontend displays the result and updates the statistics panel.
+
+Client-side validation improves usability but is not trusted for correctness; all important validation is repeated on the server.
+
+## API reference
+
+### `POST /api/applications`
+
+Submit an application.
+
+Request:
+
+```json
+{
+  "fullName": "Rahul Patil",
+  "email": "rahul@example.com",
+  "phoneNumber": "9876543210",
+  "loanAmount": 200000,
+  "assetValue": 400000,
+  "creditScore": 750
+}
+```
+
+For valid input, the API returns `200 OK`:
+
+```json
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "fullName": "Rahul Patil",
+  "email": "rahul@example.com",
+  "phoneNumber": "9876543210",
+  "loanAmount": 200000,
+  "assetValue": 400000,
+  "creditScore": 750,
+  "ltvPercent": 50,
+  "decision": "Successful",
+  "declineReason": null,
+  "metrics": {}
+}
+```
+
+An application that fails a lending rule is still valid input and returns `200 OK` with `"decision": "Declined"` and a `declineReason`. It is persisted and included in the metrics.
+
+Malformed or invalid input returns `400 Bad Request`:
+
+```json
+{
+  "errors": [
+    "Email is required.",
+    "Asset value must be greater than zero so LTV can be calculated."
+  ]
+}
+```
+
+### `GET /api/applications/metrics`
+
+Returns:
+
+```json
+{
+  "successfulApplicants": 1,
+  "declinedApplicants": 2,
+  "totalApplicants": 3,
+  "totalValueOfLoansWritten": 200000,
+  "meanAverageLtv": 68.3333
+}
+```
+
+`totalValueOfLoansWritten` includes successful loans only. `meanAverageLtv` includes successful and declined applications. When there are no applications, all counters and values are zero.
+
+### `GET /api/applications/history`
+
+Returns every submitted application, newest first. Each history item includes the applicant name, loan details, LTV, credit score, decision, optional decline reason, and submission time. Both successful and declined applications are included.
+
+## Validation rules
+
+The API rejects the request with `400 Bad Request` when:
+
+- Full name is missing or longer than 100 characters
+- Email is missing, malformed, or longer than 254 characters
+- Phone number is missing or invalid
+- Loan amount is not greater than zero
+- Asset value is not greater than zero
+- Credit score is not a whole number from 1 through 999
+
+Phone numbers may contain digits, spaces, hyphens, parentheses, and an optional leading `+`. The number must contain between 7 and 15 digits and cannot consist only of zeroes.
+
+Amounts are rounded to two decimal places before the lending decision and persistence. Invalid input is different from a lending decline: invalid input is not stored, while a valid application that fails a lending rule is stored as `Declined`.
+
+## Lending rules
+
+LTV is calculated as:
 
 ```text
-http://localhost:5173
+LTV = (loan amount / asset value) × 100
 ```
 
----
+The domain applies the following rules:
 
-# Author
+1. Loans below £100,000 are declined.
+2. Loans above £1,500,000 are declined.
+3. Loans of £1,000,000 or more require:
+   - LTV of 60% or less
+   - Credit score of at least 950
+4. Loans below £1,000,000 use these exclusive LTV bands:
+   - Below 60%: credit score at least 750
+   - 60% to below 80%: credit score at least 800
+   - 80% to below 90%: credit score at least 900
+   - 90% or more: declined
 
-**Rushikesh Kurukale**
+The exclusive bands resolve the overlapping LTV wording in the brief and make each credit threshold reachable.
 
-Blackfinch Full Stack Engineering Technical Test
+## Data model
 
-**September 2026**
+Each application is stored in the `LoanApplications` SQLite table with:
+
+- `Id`
+- `FullName`
+- `Email`
+- `PhoneNumber`
+- `LoanAmount`
+- `AssetValue`
+- `CreditScore`
+- `LtvPercent`
+- `IsSuccessful`
+- `DeclineReason`
+- `CreatedAtUtc`
+
+The API creates the schema automatically on startup. It also checks older SQLite databases and adds the applicant contact columns when necessary.
+
+## Architecture
+
+- **Domain:** `LoanDecisionService` owns the lending rules and can be tested without HTTP or a database.
+- **API contracts:** Separate request and response models define the public HTTP shape.
+- **Validation:** `ApplicationRequestValidator` handles request-level errors before the domain is called.
+- **Application service:** `LoanApplicationService` normalizes values, invokes the domain, persists the result, and calculates metrics.
+- **Controller:** `ApplicationsController` exposes only the two required endpoints and remains thin.
+- **Frontend:** React manages form state and presentation; it does not decide whether a loan should be approved.
+- **History:** The frontend loads persisted history on startup and refreshes it after each submission.
+
+## Deliberate scope
+
+This project focuses on the requirements of the technical test. It does not include authentication, applicant accounts, loan products, payments, an application-history endpoint, background queues, or a separate reporting service.
+
+For production, likely next steps would include authentication and authorization, a managed relational database with migrations and backups, idempotency and concurrency controls, structured logging and monitoring, versioned lending rules with an audit trail, and paginated application history.

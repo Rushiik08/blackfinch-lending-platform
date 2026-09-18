@@ -37,4 +37,12 @@ public sealed class ApplicationsController : ControllerBase
         var metrics = await _applications.GetMetricsAsync(cancellationToken);
         return Ok(metrics);
     }
+
+    [HttpGet("history")]
+    public async Task<ActionResult<IReadOnlyList<ApplicationHistoryItemResponse>>> GetHistory(
+        CancellationToken cancellationToken)
+    {
+        var history = await _applications.GetHistoryAsync(cancellationToken);
+        return Ok(history);
+    }
 }
