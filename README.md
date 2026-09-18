@@ -1,4 +1,4 @@
-# Blackfinch Lending Platform
+﻿# Blackfinch Lending Platform
 
 Blackfinch Lending Platform is a full-stack secured-loan application created for the **Blackfinch Engineering Candidate Technical Test — Full Stack, September 2026**.
 
