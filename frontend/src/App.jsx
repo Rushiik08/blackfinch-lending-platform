@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import ApplicationForm from "./ApplicationForm.jsx";
 import DecisionResult from "./DecisionResult.jsx";
 import MetricsPanel from "./MetricsPanel.jsx";
-import { getMetrics, submitApplication } from "./api.js";
+import { getHistory, getMetrics, submitApplication } from "./api.js";
 import "./App.css";
+import ApplicationHistory from "./ApplicationHistory.jsx";
 
 const emptyForm = {
   fullName: "",
@@ -23,6 +24,8 @@ export default function App() {
   const [error, setError] = useState("");
   const [metrics, setMetrics] = useState(null);
   const [metricsUnavailable, setMetricsUnavailable] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyUnavailable, setHistoryUnavailable] = useState(false);
 
   useEffect(() => {
     getMetrics()
@@ -33,6 +36,16 @@ export default function App() {
       .catch(() => {
         setMetrics(null);
         setMetricsUnavailable(true);
+      });
+
+    getHistory()
+      .then((data) => {
+        setHistory(data);
+        setHistoryUnavailable(false);
+      })
+      .catch(() => {
+        setHistory([]);
+        setHistoryUnavailable(true);
       });
   }, []);
 
@@ -130,6 +143,9 @@ export default function App() {
       setResult(response);
       setMetrics(response.metrics);
       setMetricsUnavailable(false);
+      const updatedHistory = await getHistory();
+      setHistory(updatedHistory);
+      setHistoryUnavailable(false);
     } catch (submitError) {
       setResult(null);
       setError(submitError.message);
@@ -163,6 +179,11 @@ export default function App() {
           <MetricsPanel metrics={metrics} isUnavailable={metricsUnavailable} />
         </div>
       </div>
+
+      <ApplicationHistory
+        applications={history}
+        isUnavailable={historyUnavailable}
+      />
     </main>
   );
 }

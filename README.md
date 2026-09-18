@@ -15,6 +15,7 @@ The backend is the single source of truth. Lending rules are implemented in the 
 - LTV calculation and decline explanation
 - SQLite persistence for all submitted applications
 - Platform metrics updated after every submission
+- Complete application history visible in the UI, with accepted and declined decisions
 - Swagger documentation in Development
 - Automated xUnit tests for rules, boundaries, and validation
 - CORS configuration for the local Vite frontend
@@ -209,6 +210,10 @@ Returns:
 
 `totalValueOfLoansWritten` includes successful loans only. `meanAverageLtv` includes successful and declined applications. When there are no applications, all counters and values are zero.
 
+### `GET /api/applications/history`
+
+Returns every submitted application, newest first. Each history item includes the applicant name, loan details, LTV, credit score, decision, optional decline reason, and submission time. Both successful and declined applications are included.
+
 ## Validation rules
 
 The API rejects the request with `400 Bad Request` when:
@@ -273,6 +278,7 @@ The API creates the schema automatically on startup. It also checks older SQLite
 - **Application service:** `LoanApplicationService` normalizes values, invokes the domain, persists the result, and calculates metrics.
 - **Controller:** `ApplicationsController` exposes only the two required endpoints and remains thin.
 - **Frontend:** React manages form state and presentation; it does not decide whether a loan should be approved.
+- **History:** The frontend loads persisted history on startup and refreshes it after each submission.
 
 ## Deliberate scope
 

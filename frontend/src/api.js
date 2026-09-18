@@ -49,3 +49,20 @@ export async function getMetrics() {
 
   return data
 }
+
+export async function getHistory() {
+  let response
+  try {
+    response = await fetch('/api/applications/history')
+  } catch {
+    throw new Error('Unable to connect to the lending service API.')
+  }
+
+  const data = await response.json().catch(() => [])
+
+  if (!response.ok) {
+    throw new Error('Application history could not be loaded.')
+  }
+
+  return data
+}

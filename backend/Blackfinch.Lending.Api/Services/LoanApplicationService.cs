@@ -99,4 +99,25 @@ public sealed class LoanApplicationService
             MeanAverageLtv = decimal.Round(meanLtv, 4, MidpointRounding.AwayFromZero)
         };
     }
+
+    public async Task<IReadOnlyList<ApplicationHistoryItemResponse>> GetHistoryAsync(
+        CancellationToken cancellationToken)
+    {
+        return await _db.LoanApplications
+            .AsNoTracking()
+            .OrderByDescending(application => application.CreatedAtUtc)
+            .Select(application => new ApplicationHistoryItemResponse
+            {
+                Id = application.Id,
+                FullName = application.FullName,
+                LoanAmount = application.LoanAmount,
+                AssetValue = application.AssetValue,
+                CreditScore = application.CreditScore,
+                LtvPercent = application.LtvPercent,
+                Decision = application.IsSuccessful ? "Successful" : "Declined",
+                DeclineReason = application.DeclineReason,
+                CreatedAtUtc = application.CreatedAtUtc
+            })
+            .ToListAsync(cancellationToken);
+    }
 }
